@@ -23,9 +23,6 @@ class GlDrawer(context: Context, attributeSet: AttributeSet) : FrameLayout(conte
 
     private val random = Random(System.currentTimeMillis())
     private val pathMeasure = PathMeasure()
-    private var distance = 0f
-    private var tan = floatArrayOf(0f,0f)
-    private var pos = floatArrayOf(0f, 0f)
     private var plane: ImageView
 
 
@@ -58,12 +55,7 @@ class GlDrawer(context: Context, attributeSet: AttributeSet) : FrameLayout(conte
         super.onDraw(canvas)
         with(canvas) {
             drawPath(planePath, planePathPaint)
-            val planeX = pos[0]
-            val planeY = pos[1]
-            plane.x = planeX
-            plane.y = planeY
-            val degrees = atan2(tan[1], tan[0]) * 180.0 / Math.PI
-            plane.rotation = degrees.toFloat() - 180
+
         }
     }
 
@@ -86,13 +78,21 @@ class GlDrawer(context: Context, attributeSet: AttributeSet) : FrameLayout(conte
     }
 
     private fun flyPlane() {
+        var distance = 0f
+        val tan = floatArrayOf(0f,0f)
+        val pos = floatArrayOf(0f, 0f)
         val valueAnimator = ValueAnimator.ofFloat(0f, 1f)
         valueAnimator.duration = (pathMeasure.length * 5).toLong()
         valueAnimator.interpolator = AccelerateDecelerateInterpolator()
         valueAnimator.addUpdateListener {
             distance = it.animatedValue as Float
             pathMeasure.getPosTan(distance * pathMeasure.length, pos, tan)
-            invalidate()
+            val planeX = pos[0]
+            val planeY = pos[1]
+            plane.x = planeX
+            plane.y = planeY
+            val degrees = atan2(tan[1], tan[0]) * 180.0 / Math.PI
+            plane.rotation = degrees.toFloat() - 180
         }
         valueAnimator.doOnEnd {
             if (pathMeasure.nextContour()) {
